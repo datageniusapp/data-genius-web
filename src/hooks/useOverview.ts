@@ -13,7 +13,7 @@ export interface UseOverviewResult {
   error: string | null;
 }
 
-const API_BASE = '/api';
+const API_BASE = import.meta.env.VITE_API_BASE_URL ?? '/api';
 
 /**
  * Fetches and validates the overview endpoint on mount.
