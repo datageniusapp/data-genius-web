@@ -6,7 +6,7 @@
 import { useState, useEffect } from 'react';
 import { OverviewSchema, type Overview } from '../types/overview';
 
-const API_URL = import.meta.env.VITE_API_URL as string;
+const API_BASE = 'https://web-production-d26da.up.railway.app';
 
 interface UseOverviewResult {
   data: Overview | null;
@@ -26,7 +26,7 @@ export function useOverview(): UseOverviewResult {
 
     async function fetchOverview(): Promise<void> {
       try {
-        const response = await fetch(`${API_URL}/overview`);
+        const response = await fetch(`${API_BASE}/overview`);
         if (!response.ok) {
           throw new Error(`HTTP ${response.status}: ${response.statusText}`);
         }
