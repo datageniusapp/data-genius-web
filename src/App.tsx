@@ -4,12 +4,15 @@
  */
 
 import { useOverview } from './hooks/useOverview';
+import { useRetention } from './hooks/useRetention';
 import { LoadingSpinner } from './components/LoadingSpinner';
 import { ErrorState } from './components/ErrorState';
 import { MetricCard, MetricRow } from './components/MetricCard';
 import { AIInsightCard } from './components/AIInsightCard';
+import { AdvancedMetrics } from './components/AdvancedMetrics';
 import { LiveNowFeed } from './components/LiveNowFeed';
 import { KeyInsights } from './components/KeyInsights';
+import { RetentionCard } from './components/RetentionCard';
 import { computeInsight, computeAtRisk, generateActivity } from './utils/insight';
 
 function HeaderRight() {
@@ -43,6 +46,7 @@ function parseGrowthRate(rate: number): { value: string; direction: 'up' | 'down
 
 export default function App() {
   const { data, loading, error } = useOverview();
+  const { data: retentionData } = useRetention();
 
   if (loading) return <LoadingSpinner />;
   if (error) return <ErrorState message={error} />;
@@ -122,6 +126,12 @@ export default function App() {
               <MetricRow label="Revenue Last 28d" value={`$${revenue.revenueLast28Days.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`} />
             </MetricCard>
           </div>
+
+          {/* Advanced Investor Metrics */}
+          <AdvancedMetrics data={data} />
+
+          {/* D1/D7 Retention (live from MongoDB) */}
+          {retentionData !== null && <RetentionCard retention={retentionData} />}
 
           {/* Key Insights */}
           <KeyInsights
