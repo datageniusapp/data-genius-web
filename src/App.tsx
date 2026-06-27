@@ -1,85 +1,132 @@
 /**
  * @module App
- * @description Root application component for the Data Genius dashboard.
- * Renders a mobile-first (max 430px) single-column scrollable layout with
- * header, tab bar, AI insight card, metrics grid, key insights, revenue chart,
- * and fixed bottom nav. Wires real data via useOverview hook.
+ * @description Data Genius dashboard — main layout.
  */
-import type React from 'react';
-import { useState } from 'react';
-import { Header } from './components/Header';
-import { TabBar, type Tab } from './components/TabBar';
-import { AIInsightCard } from './components/AIInsightCard';
-import { MetricsGrid } from './components/MetricsGrid';
-import { KeyInsights } from './components/KeyInsights';
-import { RevenueChart } from './components/RevenueChart';
-import { BottomNav } from './components/BottomNav';
-import { useOverview } from './hooks/useOverview';
 
-/** Loading skeleton for metric cards while data is fetching. */
-function SkeletonCard({ className = '' }: { className?: string }): React.ReactElement {
+import { useOverview } from './hooks/useOverview';
+import { LoadingSpinner } from './components/LoadingSpinner';
+import { ErrorState } from './components/ErrorState';
+import { MetricCard, MetricRow } from './components/MetricCard';
+import { AIInsightCard } from './components/AIInsightCard';
+import { LiveNowFeed } from './components/LiveNowFeed';
+import { KeyInsights } from './components/KeyInsights';
+import { computeInsight, computeAtRisk, generateActivity } from './utils/insight';
+
+function LiveBadge() {
   return (
-    <div
-      className={`animate-pulse rounded-xl ${className}`}
-      style={{ backgroundColor: '#1A1A1A' }}
-    />
+    <span className="flex items-center gap-1.5 rounded-full border border-white/10 px-3 py-1 text-xs font-medium text-white/70">
+      <span className="relative flex h-2 w-2">
+        <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-500 opacity-75" />
+        <span className="relative inline-flex h-2 w-2 rounded-full bg-red-500" />
+      </span>
+      Live
+    </span>
   );
 }
 
-/** Full dashboard content with real data. */
-function DashboardContent(): React.ReactElement {
-  const [activeTab, setActiveTab] = useState<Tab>('insights');
+function parseGrowthRate(rate: string): { value: string; direction: 'up' | 'down' | null } {
+  const num = parseFloat(rate.replace('%', ''));
+  if (isNaN(num)) return { value: rate, direction: null };
+  return { value: rate, direction: num >= 0 ? 'up' : 'down' };
+}
+
+export default function App() {
   const { data, loading, error } = useOverview();
 
+  if (loading) return <LoadingSpinner />;
+  if (error) return <ErrorState message={error} />;
+  if (!data) return <ErrorState message="No data received." />;
+
+  const { users, growth, revenue } = data;
+  const growthRate = parseGrowthRate(growth.growthRateLast30Days);
+  const insight = computeInsight(data);
+  const { atRisk, upside } = computeAtRisk(data);
+  const activityItems = generateActivity(data);
+
   return (
     <div
-      className="relative mx-auto min-h-screen w-full max-w-[430px]"
-      style={{ backgroundColor: '#0A0A0A' }}
+      className="min-h-screen font-sans"
+      style={{ background: '#000000', color: '#FFFFFF' }}
     >
-      <Header />
-      <TabBar activeTab={activeTab} onTabChange={setActiveTab} />
-
-      {/* Error banner */}
-      {error && (
-        <div
-          className="mx-4 mb-4 rounded-xl px-4 py-3 text-sm"
-          style={{ backgroundColor: '#3A0010', color: '#FF6B6B' }}
-          role="alert"
-        >
-          ⚠️ {error} — showing last known data.
-        </div>
-      )}
-
-      <div className="flex flex-col gap-4 pb-28">
-        {/* AI Insight hero */}
-        <AIInsightCard data={data} />
-
-        {/* Metric cards or skeleton */}
-        {loading ? (
-          <div className="mx-4 grid grid-cols-3 gap-2">
-            <SkeletonCard className="h-24" />
-            <SkeletonCard className="h-24" />
-            <SkeletonCard className="h-24" />
+      {/* Top bar */}
+      <header className="border-b border-white/10 px-6 py-4">
+        <div className="mx-auto flex max-w-6xl items-center justify-between">
+          <div>
+            <h1 className="text-xl font-bold tracking-tight">
+              <span className="text-white">Data</span>
+              <span style={{ color: '#EF4444' }}>Genius</span>
+            </h1>
+            <p className="mt-0.5 text-xs text-white/40">
+              Credit is Power. Use it like a Genius.
+            </p>
           </div>
-        ) : (
-          <MetricsGrid data={data} />
-        )}
+          <LiveBadge />
+        </div>
+      </header>
 
-        {/* Key Insights */}
-        {loading ? <SkeletonCard className="mx-4 h-28" /> : <KeyInsights data={data} />}
+      {/* Main content */}
+      <main className="mx-auto max-w-6xl px-6 py-8">
+        <div className="flex flex-col gap-6">
+          {/* AI Insight hero card */}
+          <AIInsightCard insight={insight} />
 
-        {/* Revenue chart */}
-        {loading ? <SkeletonCard className="mx-4 h-56" /> : <RevenueChart data={data} />}
-      </div>
+          {/* Live Now feed */}
+          <LiveNowFeed items={activityItems} />
 
-      <BottomNav />
+          {/* Metric cards */}
+          <div className="grid gap-6 md:grid-cols-3">
+            {/* Users card */}
+            <MetricCard title="Users" icon="👥">
+              <MetricRow label="Total Users" value={users.total} large />
+              <MetricRow label="New Last 30 Days" value={users.newLast30Days} />
+              <MetricRow
+                label="Active Last 30 Days"
+                value={growth.activeUsersLast30Days}
+              />
+            </MetricCard>
+
+            {/* Growth card */}
+            <MetricCard title="Growth" icon="📈">
+              <MetricRow
+                label="Growth Rate (30d)"
+                value={growthRate.value}
+                large
+                color="#EF4444"
+                indicator={growthRate.direction}
+              />
+              <MetricRow label="Subscribed Users" value={growth.subscribedUsers} />
+              <MetricRow label="New Users (30d)" value={growth.newUsersLast30Days} />
+            </MetricCard>
+
+            {/* Revenue card */}
+            <MetricCard title="Revenue" icon="💰">
+              <MetricRow
+                label="MRR"
+                value={revenue.mrr}
+                large
+                color="#FCB900"
+              />
+              <MetricRow label="Active Subscribers" value={revenue.activeSubscribers} />
+              <MetricRow label="ARPU" value={revenue.arpu} />
+              <MetricRow label="Revenue Last 28d" value={revenue.revenueLast28Days} />
+            </MetricCard>
+          </div>
+
+          {/* Key Insights */}
+          <KeyInsights
+            growthRate={growth.growthRateLast30Days}
+            atRisk={atRisk}
+            upside={upside}
+          />
+        </div>
+      </main>
+
+      {/* Footer */}
+      <footer className="mt-8 border-t border-white/10 px-6 py-4 text-center">
+        <p className="text-xs text-white/30">
+          Powered by Credit Genius — Live Data
+        </p>
+      </footer>
     </div>
   );
-}
-
-/**
- * Root App component — wraps dashboard with full-screen dark background.
- */
-export default function App(): React.ReactElement {
-  return <DashboardContent />;
 }

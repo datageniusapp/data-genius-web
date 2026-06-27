@@ -1,83 +1,31 @@
 /**
  * @module components/AIInsightCard
- * @description Hero AI Insight card showing today's founder brief.
- * Displays MRR, active subscribers, growth rate, and focus action,
- * with a decorative glowing star on the right.
+ * @description Hero card showing the AI-computed insight from real dashboard data.
  */
-import type React from 'react';
-import type { Overview } from '../types/overview';
 
-/** Props for AIInsightCard. */
-export interface AIInsightCardProps {
-  /** Overview data from the API, or null while loading. */
-  data: Overview | null;
+import type { InsightResult } from '../utils/insight';
+
+interface AIInsightCardProps {
+  insight: InsightResult;
 }
 
-/**
- * Hero AI Insight card — "Today's Founder Brief" with real metrics and call to action.
- */
-export function AIInsightCard({ data }: AIInsightCardProps): React.ReactElement {
-  const mrr = data?.revenue.mrr ?? 0;
-  const subscribers = data?.revenue.activeSubscribers ?? 0;
-  const growth = data?.growth.growthRateLast30Days ?? 0;
-
-  const insightText = data
-    ? `MRR is $${mrr.toLocaleString()} with ${subscribers} active subscribers. Growth rate is ${growth.toFixed(1)}% over the last 30 days.`
-    : 'Loading your metrics…';
-
+export function AIInsightCard({ insight }: AIInsightCardProps) {
   return (
-    <div
-      className="relative mx-4 overflow-hidden rounded-2xl p-5"
-      style={{ backgroundColor: '#1A1A1A' }}
-    >
-      {/* AI INSIGHT label */}
-      <div className="mb-3 flex items-center gap-1.5">
-        <span style={{ color: '#E8002D' }} aria-hidden="true" className="text-base">
-          ✦
-        </span>
-        <span
-          className="text-xs font-semibold tracking-widest"
-          style={{ color: '#E8002D', letterSpacing: '0.15em' }}
-        >
-          AI INSIGHT
-        </span>
-      </div>
-
-      {/* Heading */}
-      <h2 className="mb-2 text-2xl font-bold text-white">Today&apos;s Founder Brief</h2>
-
-      {/* Insight body */}
-      <p className="mb-1 text-sm leading-relaxed" style={{ color: '#C0C0C5' }}>
-        {insightText}
+    <div className="rounded-2xl border border-red-500/30 bg-white/5 p-6 shadow-[0_0_40px_rgba(239,68,68,0.1)] backdrop-blur">
+      <p className="mb-3 text-xs font-semibold uppercase tracking-widest text-red-400">
+        ✦ AI Insight
       </p>
-
-      {/* Focus line */}
-      <p className="mb-3 text-sm font-semibold" style={{ color: '#E8002D' }}>
-        Focus this week: retention.
+      <p className="text-2xl font-bold leading-snug text-white">
+        {insight.headline}
       </p>
-
-      {/* View action plan link */}
-      <button type="button" className="text-sm" style={{ color: '#8E8E93' }}>
-        View action plan →
-      </button>
-
-      {/* Decorative glowing star */}
-      <div
-        className="pointer-events-none absolute top-4 right-4 flex h-16 w-16 items-center justify-center"
-        aria-hidden="true"
-      >
-        <div
-          className="flex h-16 w-16 items-center justify-center rounded-full"
-          style={{
-            background:
-              'radial-gradient(circle, rgba(232,0,45,0.25) 0%, rgba(232,0,45,0.05) 60%, transparent 80%)',
-            filter: 'drop-shadow(0 0 16px rgba(232,0,45,0.6))',
-          }}
+      <p className="mt-2 text-sm text-white/60">{insight.subtext}</p>
+      <div className="mt-5">
+        <button
+          type="button"
+          className="rounded-full border border-red-500 px-5 py-2 text-sm font-medium text-red-400 transition hover:bg-red-500/10"
         >
-          <span className="text-3xl" style={{ color: '#E8002D' }}>
-            ✦
-          </span>
-        </div>
+          ✦ Run Genius Plan
+        </button>
       </div>
     </div>
   );

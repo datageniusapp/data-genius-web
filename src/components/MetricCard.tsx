@@ -1,74 +1,61 @@
 /**
  * @module components/MetricCard
- * @description Individual metric card with label, value, trend indicator, and sparkline.
- * Used in the 3-column metric grid for MRR, Active Subscribers, and Growth Rate.
+ * @description Reusable glass-effect card for displaying a group of metrics.
  */
-import type React from 'react';
-import { LineChart, Line, ResponsiveContainer } from 'recharts';
 
-/** A single data point for the sparkline chart. */
-export interface SparklinePoint {
-  value: number;
-}
+import type { ReactNode } from 'react';
 
-/** Props for MetricCard. */
-export interface MetricCardProps {
-  /** Metric label shown in gray. */
+interface MetricRowProps {
   label: string;
-  /** Primary value shown prominently. */
-  value: string;
-  /** Trend percentage string (e.g. "+12.5%"). */
-  trend: string;
-  /** Whether trend is positive (red up arrow) or negative (red down arrow). */
-  trendUp: boolean;
-  /** Sparkline data points. */
-  sparkline: SparklinePoint[];
+  value: string | number;
+  large?: boolean;
+  color?: string;
+  indicator?: 'up' | 'down' | null;
 }
 
-/**
- * Compact metric card — label, bold value, trend arrow, and red Recharts sparkline.
- */
-export function MetricCard({
-  label,
-  value,
-  trend,
-  trendUp,
-  sparkline,
-}: MetricCardProps): React.ReactElement {
+export function MetricRow({ label, value, large, color, indicator }: MetricRowProps) {
+  const valueStr = typeof value === 'number' ? value.toLocaleString() : value;
+  return (
+    <div className="flex items-baseline justify-between gap-4 py-2">
+      <span className="text-sm text-white/50">{label}</span>
+      <span
+        className={large ? 'text-3xl font-bold tracking-tight' : 'text-base font-semibold'}
+        style={color ? { color } : { color: '#FFFFFF' }}
+      >
+        {indicator === 'up' && <span className="mr-1 text-green-400">↑</span>}
+        {indicator === 'down' && <span className="mr-1 text-red-400">↓</span>}
+        {valueStr}
+      </span>
+    </div>
+  );
+}
+
+interface MetricCardProps {
+  title: string;
+  icon?: string;
+  children: ReactNode;
+  glowRed?: boolean;
+}
+
+export function MetricCard({ title, icon, children, glowRed }: MetricCardProps) {
   return (
     <div
-      className="flex flex-col gap-1 rounded-xl p-3"
-      style={{ backgroundColor: '#1A1A1A' }}
+      className={[
+        'flex flex-col rounded-2xl border p-6',
+        glowRed
+          ? 'border-red-500/30 shadow-[0_0_30px_rgba(239,68,68,0.15)]'
+          : 'border-white/10',
+      ].join(' ')}
+      style={{
+        background: 'rgba(255,255,255,0.05)',
+        backdropFilter: 'blur(12px)',
+      }}
     >
-      {/* Label */}
-      <span className="text-xs leading-tight" style={{ color: '#8E8E93' }}>
-        {label}
-      </span>
-
-      {/* Value */}
-      <span className="text-lg font-bold text-white leading-tight">{value}</span>
-
-      {/* Trend */}
-      <div className="flex items-center gap-0.5">
-        <span className="text-xs font-semibold" style={{ color: '#E8002D' }}>
-          {trendUp ? '↑' : '↓'} {trend}
-        </span>
+      <div className="mb-4 flex items-center gap-2">
+        {icon && <span className="text-xl">{icon}</span>}
+        <h2 className="text-xs font-semibold uppercase tracking-widest text-white/40">{title}</h2>
       </div>
-
-      {/* Sparkline */}
-      <div className="mt-1 h-8">
-        <ResponsiveContainer width="100%" height="100%">
-          <LineChart data={sparkline}>
-            <Line
-              type="monotone"
-              dataKey="value"
-              stroke="#E8002D"
-              strokeWidth={1.5}
-              dot={false}
-            />
-          </LineChart>
-        </ResponsiveContainer>
-      </div>
+      <div className="flex flex-col divide-y divide-white/5">{children}</div>
     </div>
   );
 }
