@@ -102,7 +102,7 @@ export default function App() {
                 label="Growth Rate (30d)"
                 value={growthRate.value}
                 large
-                color="#EF4444"
+                color={growthRate.direction === 'up' ? '#4ade80' : '#f87171'}
                 indicator={growthRate.direction}
               />
               <MetricRow label="Subscribed Users" value={growth.subscribedUsers} />
