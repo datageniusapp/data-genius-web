@@ -12,15 +12,27 @@ import { LiveNowFeed } from './components/LiveNowFeed';
 import { KeyInsights } from './components/KeyInsights';
 import { computeInsight, computeAtRisk, generateActivity } from './utils/insight';
 
-function LiveBadge() {
+function HeaderRight() {
   return (
-    <span className="flex items-center gap-1.5 rounded-full border border-white/10 px-3 py-1 text-xs font-medium text-white/70">
-      <span className="relative flex h-2 w-2">
-        <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-500 opacity-75" />
-        <span className="relative inline-flex h-2 w-2 rounded-full bg-red-500" />
-      </span>
-      Live
-    </span>
+    <div className="flex items-center gap-3">
+      {/* App badge */}
+      <div className="flex items-center gap-2 bg-white/5 border border-white/10 rounded-full px-3 py-1.5">
+        <img
+          src="/credit-genius-logo.png"
+          alt="Credit Genius"
+          className="w-6 h-6 rounded-full object-cover"
+        />
+        <span className="text-sm font-medium text-white">Credit Genius</span>
+      </div>
+      {/* Live indicator */}
+      <div className="flex items-center gap-1.5">
+        <span className="relative flex h-2 w-2">
+          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-500 opacity-75" />
+          <span className="relative inline-flex h-2 w-2 rounded-full bg-red-500" />
+        </span>
+        <span className="text-xs text-white/60 font-medium">Live</span>
+      </div>
+    </div>
   );
 }
 
@@ -59,7 +71,7 @@ export default function App() {
               Credit is Power. Use it like a Genius.
             </p>
           </div>
-          <LiveBadge />
+          <HeaderRight />
         </div>
       </header>
 
