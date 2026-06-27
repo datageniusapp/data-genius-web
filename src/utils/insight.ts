@@ -16,14 +16,15 @@ export interface ActivityItem {
   time: string;
 }
 
-/** Parse a dollar string like "$1,533" or "$533" into a number. */
-function parseDollar(value: string): number {
+/** Parse a dollar string like "$1,533" or "$533" into a number, or pass through a raw number. */
+function parseDollar(value: string | number): number {
+  if (typeof value === 'number') return value;
   return parseFloat(value.replace(/[$,]/g, ''));
 }
 
 /** Compute the most relevant AI insight from live data. Problems take priority. */
 export function computeInsight(data: Overview): InsightResult {
-  const growthRate = parseFloat(data.growth.growthRateLast30Days);
+  const growthRate = data.growth.growthRateLast30Days;
   const activeUsers = data.growth.activeUsersLast30Days;
   const totalUsers = data.users.total;
   const activeRate = totalUsers > 0 ? activeUsers / totalUsers : 0;
@@ -47,7 +48,7 @@ export function computeInsight(data: Overview): InsightResult {
   }
 
   return {
-    headline: `${data.revenue.mrr} MRR. ${atRisk} users need a nudge.`,
+    headline: `$${parseDollar(data.revenue.mrr).toLocaleString()} MRR. ${atRisk} users need a nudge.`,
     subtext: `Targeted recovery could unlock +$${upside.toLocaleString()} in monthly revenue.`,
   };
 }

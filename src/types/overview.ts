@@ -15,15 +15,15 @@ export const GrowthSchema = z.object({
   newUsersLast30Days: z.number(),
   activeUsersLast30Days: z.number(),
   subscribedUsers: z.number(),
-  growthRateLast30Days: z.string(),
+  growthRateLast30Days: z.number(),
 });
 
 export const RevenueSchema = z.object({
-  mrr: z.string(),
+  mrr: z.number(),
   activeSubscribers: z.number(),
-  revenueLast28Days: z.string(),
-  newCustomers28Days: z.number(),
-  arpu: z.string(),
+  revenueLast28Days: z.number(),
+  newCustomersLast28Days: z.number(),
+  arpu: z.number(),
 });
 
 export const OverviewSchema = z.object({

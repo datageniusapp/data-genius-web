@@ -24,10 +24,9 @@ function LiveBadge() {
   );
 }
 
-function parseGrowthRate(rate: string): { value: string; direction: 'up' | 'down' | null } {
-  const num = parseFloat(rate.replace('%', ''));
-  if (isNaN(num)) return { value: rate, direction: null };
-  return { value: rate, direction: num >= 0 ? 'up' : 'down' };
+function parseGrowthRate(rate: number): { value: string; direction: 'up' | 'down' | null } {
+  if (isNaN(rate)) return { value: String(rate), direction: null };
+  return { value: `${rate.toFixed(2)}%`, direction: rate >= 0 ? 'up' : 'down' };
 }
 
 export default function App() {
@@ -102,19 +101,19 @@ export default function App() {
             <MetricCard title="Revenue" icon="💰">
               <MetricRow
                 label="MRR"
-                value={revenue.mrr}
+                value={`$${revenue.mrr.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`}
                 large
                 color="#FCB900"
               />
               <MetricRow label="Active Subscribers" value={revenue.activeSubscribers} />
-              <MetricRow label="ARPU" value={revenue.arpu} />
-              <MetricRow label="Revenue Last 28d" value={revenue.revenueLast28Days} />
+              <MetricRow label="ARPU" value={`$${revenue.arpu.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`} />
+              <MetricRow label="Revenue Last 28d" value={`$${revenue.revenueLast28Days.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`} />
             </MetricCard>
           </div>
 
           {/* Key Insights */}
           <KeyInsights
-            growthRate={growth.growthRateLast30Days}
+            growthRate={growthRate.value}
             atRisk={atRisk}
             upside={upside}
           />
